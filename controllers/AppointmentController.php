@@ -1,29 +1,28 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require_once '../models/Appointment.php';
 require_once '../helpers/MailHelper.php';
 
 class AppointmentController {
-    private $appointmentModel;
+    public function schedule() {
+        // Obtener los datos del formulario
+        $date = $_POST['date'];
+        $time = $_POST['time'];
 
-    public function __construct() {
-        $this->appointmentModel = new Appointment();
-    }
+        // Guardar la cita en la base de datos
+        $appointment = new Appointment();
+        $appointment->date = $date;
+        $appointment->time = $time;
+        $appointment->save();
 
-    public function schedule($userId, $dates, $times) {
-        foreach ($dates as $date) {
-            foreach ($times as $time) {
-                $this->appointmentModel->createAppointment($userId, $date, $time);
-            }
-        }
-        $doctorEmail = "doctor@example.com";
-        MailHelper::sendMail($doctorEmail, "Nueva Cita Agendada", "Se ha agendado una nueva cita.");
-        echo "Cita agendada y correo enviado al doctor.";
-    }
+        // Enviar confirmación por correo electrónico
+        MailHelper::sendMail($_SESSION['user_email'], 'Appointment Confirmation', 'Your appointment is confirmed.');
 
-    public function getAvailability($date) {
-        $appointments = $this->appointmentModel->getAppointmentsByDate($date);
-        // Lógica para filtrar disponibilidad basada en citas existentes
-        return $appointments;
+        // Redirigir a la página de confirmación
+        header("Location: ../views/appointment/confirmation.html?date=$date&time=$time");
     }
 }
 ?>

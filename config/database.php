@@ -1,31 +1,24 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 class Database {
-    private static $instance = null;
+    // private static $instance = null;
     private $conn;
 
-    private $host = 'localhost'; // Cambia esto si tu servidor de SQL Server está en otro host
-    private $name = 'appointment_db'; // Nombre de la base de datos
+    private $host = 'localhost';
+    private $name = 'appointment_db';
 
     private function __construct() {
-        $connectionOptions = array(
-            "Database" => $this->name,
-            "CharacterSet" => "UTF-8"
-        );
-        $this->conn = new PDO("sqlsrv:Server=$this->host;ConnectionPooling=0", null, null, array(
-            PDO::SQLSRV_ATTR_ENCODING => PDO::SQLSRV_ENCODING_UTF8
-        ));
-        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    }
-
-    public static function getInstance() {
-        if (!self::$instance) {
-            self::$instance = new Database();
+        try {
+            // Utilizar Windows Authentication (Integrated Security)
+            $this->conn = new PDO("sqlsrv:Server=$this->host;Database=$this->name;ConnectionPooling=0", null, null);
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            echo "Connection failed: " . $e->getMessage();
         }
-        return self::$instance;
     }
-
-    public function getConnection() {
-        return $this->conn;
-    }
+    
 }
 ?>
